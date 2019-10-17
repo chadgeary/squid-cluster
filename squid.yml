@@ -17,6 +17,6 @@
 
     - name: squid service enabled/started
       systemd:
-        - name: squid
-        - state: started
-        - enabled: yes
+        name: squid
+        state: started
+        enabled: yes
