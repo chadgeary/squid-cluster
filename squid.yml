@@ -20,3 +20,19 @@
         name: squid
         state: started
         enabled: yes
+
+    - name: squid.conf read-only (managed via squid-allowed-hosts)
+      copy:
+        src: conf/squid.conf
+        dest: /etc/squid/squid.conf
+        owner: root
+        group: squid
+        mode: 440
+        backup: yes
+      register: squid_conf
+
+    - name: squid service restarted on conf change
+      systemd:
+        name: squid
+        state: restarted
+      when: squid_conf.changed
