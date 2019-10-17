@@ -40,8 +40,8 @@
         mode: 440
         backup: yes
         
-    - name: squid service restarted on conf change
+    - name: squid service reloaded on conf change
       systemd:
         name: squid
-        state: restarted
+        state: reloaded
       when: squid_conf.changed
