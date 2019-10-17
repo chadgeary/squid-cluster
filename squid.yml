@@ -1,0 +1,22 @@
+---
+- name: squid
+  hosts: '{{ target }}'
+  vars:
+  become: True
+  become_user: root
+  tasks:
+    - name: epel package
+      yum:
+        name: epel-release
+        state: latest
+
+    - name: squid package
+      yum:
+        name: squid
+        state: latest
+
+    - name: squid service enabled/started
+      systemd:
+        - name: squid
+        - state: started
+        - enabled: yes
