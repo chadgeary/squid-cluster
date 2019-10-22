@@ -79,9 +79,13 @@
         - squid_user_in_passwd.rc != 0
         - inventory_hostname == targets[0]
 
-    - copy: copy /etc/squid/passwd to other targets
-        src: "/{{ targets[0] }}/etc/squid/passwd"
+    - name: copy /etc/squid/passwd to other targets
+      copy:
+        src: /{{ targets[0] }}/etc/squid/passwd
         dest: /etc/squid/passwd
+        mode: '0460'
+        owner: squid
+        group: root
       when:
         - squid_user_in_passwd.rc != 0
         - inventory_hostname != targets[0]
