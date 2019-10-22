@@ -65,7 +65,7 @@
         echo -n $(openssl rand -base64 32) > /etc/squid/{{ squid_user }}.txt
       when:
         - squid_user_in_passwd.rc != 0
-        - inventory_hostname == target[0]
+        - inventory_hostname == target.split()[0]
 
     - name: set user password in /etc/squid/passwd
       shell: cat /etc/squid/{{ squid_user }}.txt | htpasswd -i /etc/squid/passwd {{ squid_user }}
@@ -77,18 +77,18 @@
         dest: /
       when:
         - squid_user_in_passwd.rc != 0
-        - inventory_hostname == target[0]
+        - inventory_hostname == target.split()[0]
 
     - name: copy /etc/squid/passwd to other targets
       copy:
-        src: /{{ target[0] }}/etc/squid/passwd
+        src: /{{ target.split()[0] }}/etc/squid/passwd
         dest: /etc/squid/passwd
         mode: '0460'
         owner: squid
         group: root
       when:
         - squid_user_in_passwd.rc != 0
-        - inventory_hostname != target[0]
+        - inventory_hostname != target.split()[0]
 
     - name: squid service reload
       systemd:
