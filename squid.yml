@@ -15,6 +15,11 @@
         name: squid
         state: latest
 
+    - name: htpasswd package
+      yum:
+        name: httpd-tools
+        state: latest
+
     - name: squid service enabled/started
       systemd:
         name: squid
@@ -39,7 +44,24 @@
         group: squid
         mode: 440
         backup: yes
-        
+
+    - name: generate user credential / ensure passwd file exists
+      shell: |
+        # generates a root-read-only squid-user password
+        umask 377
+        echo -n $(openssl rand -base64 32) > /etc/squid/{{ squid_user }}.txt
+
+    - name: ensure /etc/squid/passwd exists
+      file:
+        path: /etc/squid/passwd
+        state: touch
+        owner: squid
+        group: root
+        mode: 460
+
+    - name: set user password to /etc/squid/passwd
+      shell: cat /etc/squid/{{ squid_user }}.txt | htpasswd -i /etc/squid/passwd {{ squid_user }}
+
     - name: squid service reloaded on conf change
       systemd:
         name: squid
