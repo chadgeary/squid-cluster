@@ -43,7 +43,7 @@
         owner: root
         group: squid
         mode: 440
-        backup: yes
+        backup: True
 
     - name: ensure /etc/squid/passwd exists with appropriate permissions
       file:
@@ -56,17 +56,35 @@
     - name: determine if user already in /etc/squid/passwd
       shell: grep --quiet '^{{ squid_user }}:\$' /etc/squid/passwd
       register: squid_user_in_passwd
+      ignore_errors: yes
 
-    - name: generate user credential if not exists
+    - name: generate user credential if not exists (on first target)
       shell: |
         # generates a root-read-only squid-user password
         umask 377
         echo -n $(openssl rand -base64 32) > /etc/squid/{{ squid_user }}.txt
-      when: squid_user_in_passwd.rc != 0
+      when:
+        - squid_user_in_passwd.rc != 0
+        - inventory_hostname == targets[0]
 
     - name: set user password in /etc/squid/passwd
       shell: cat /etc/squid/{{ squid_user }}.txt | htpasswd -i /etc/squid/passwd {{ squid_user }}
       when: squid_user_in_passwd.rc != 0
+
+    - name: fetch /etc/squid/passwd file from first target
+      fetch:
+        src: /etc/squid/passwd
+        dest: /
+      when:
+        - squid_user_in_passwd.rc != 0
+        - inventory_hostname == targets[0]
+
+    - copy: copy /etc/squid/passwd to other targets
+        src: /{{ targets[0] }}/etc/squid/passwd
+        dest: /etc/squid/passwd
+      when:
+        - squid_user_in_passwd.rc != 0
+        - inventory_hostname != targets[0]
 
     - name: squid service reload
       systemd:
