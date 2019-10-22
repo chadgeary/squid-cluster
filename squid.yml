@@ -80,7 +80,7 @@
         - inventory_hostname == targets[0]
 
     - copy: copy /etc/squid/passwd to other targets
-        src: /{{ targets[0] }}/etc/squid/passwd
+        src: "/{{ targets[0] }}/etc/squid/passwd"
         dest: /etc/squid/passwd
       when:
         - squid_user_in_passwd.rc != 0
